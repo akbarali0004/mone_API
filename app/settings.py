@@ -5,6 +5,8 @@ class Settings(BaseSettings):
     ALGORITHM: str
     ACCESS_TOKEN_EXPIRE_DAYS: int
     REFRESH_TOKEN_EXPIRE_DAYS: int
+    BASE_URL: str
+    UPLOAD_DIR: str = "uploads"
 
     class Config:
         env_file = ".env"

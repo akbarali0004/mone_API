@@ -4,12 +4,8 @@ from utils.enums import TaskStatus, TaskType
 
 
 # Roles
-class RoleBase(BaseModel):
+class RoleCreate(BaseModel):
     name: str
-
-
-class RoleCreate(RoleBase):
-    pass
 
 
 class RoleResponse(BaseModel):
@@ -22,15 +18,12 @@ class RoleResponse(BaseModel):
 
 
 # Filials
-class FilialBase(BaseModel):
+class FilialCreate(BaseModel):
     name: str
 
 
-class FilialCreate(FilialBase):
-    pass
-
-
-class FilialResponse(FilialBase):
+class FilialResponse(BaseModel):
+    name: str
     id: int
 
     model_config = {
@@ -43,7 +36,7 @@ class UserBase(BaseModel):
     username: str
     full_name: Optional[str] = None
     role: int
-    filial_id: int
+    filial_id: Optional[int] = None
 
 
 class UserCreate(UserBase):
@@ -62,15 +55,11 @@ class UserResponse(BaseModel):
 
 
 # Tasks
-class TaskBase(BaseModel):
+class TaskCreate(BaseModel):
     description: str
     task_type: TaskType
     role: int
-    filial_id: int
-
-
-class TaskCreate(TaskBase):
-    pass
+    filials_id: list[int]
 
 
 class TaskResponse(BaseModel):
@@ -107,3 +96,15 @@ class TaskProofResponse(BaseModel):
 class UserLogin(BaseModel):
     username: str
     password: str
+
+
+# Token
+class Token(BaseModel):
+    full_name: str
+    role: str
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+
+class TokenRefresh(BaseModel):
+    refresh_token: str

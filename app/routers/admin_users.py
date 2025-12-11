@@ -5,7 +5,7 @@ from schemas import UserCreate, UserResponse
 from deps import admin_only
 from crud import get_users, create_user, delete_user
 
-router = APIRouter(prefix="/admin", tags=["Admin Users"], dependencies=[Depends(admin_only)])
+router = APIRouter(prefix="/admin", tags=["Admin Users"], dependencies=[Depends(admin_only)]) #, dependencies=[Depends(admin_only)]
 
 
 @router.get("/users/", response_model=list[UserResponse])

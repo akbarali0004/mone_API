@@ -37,7 +37,7 @@ class User(Base):
     password = Column(String)
 
     role = Column(Integer, ForeignKey("roles.id"))
-    filial_id = Column(Integer, ForeignKey("filials.id"))
+    filial_id = Column(Integer, ForeignKey("filials.id"), nullable=True)
 
     role_rel = relationship("Role", back_populates="users")
     filial = relationship("Filial", back_populates="users")

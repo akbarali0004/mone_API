@@ -1,21 +1,11 @@
 from datetime import datetime, timedelta
 from jose import JWTError, jwt, ExpiredSignatureError
-from passlib.context import CryptContext
 from settings import settings
 
 ACCESS_TOKEN_EXPIRE = timedelta(days=settings.ACCESS_TOKEN_EXPIRE_DAYS)
 SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = settings.ALGORITHM
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
-def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
-
-
-def get_password_hash(password):
-    return pwd_context.hash(password)
+REFRESH_EXPIRE_DAYS = settings.REFRESH_TOKEN_EXPIRE_DAYS
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
@@ -32,8 +22,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-
-def decode_access_token(token: str):
+def verify_token(token: str):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
@@ -41,3 +30,17 @@ def decode_access_token(token: str):
         return "expired"
     except JWTError:
         return None
+    
+
+def create_refresh_token(data: dict):
+    """
+    Refresh token yaratadi.
+    data: dict (masalan {"user_id": 1, "role": 2})
+    return: JWT token (str)
+    """
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(days=REFRESH_EXPIRE_DAYS)
+    to_encode.update({"exp": expire, "iat": datetime.utcnow()})
+
+    token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return token

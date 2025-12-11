@@ -9,17 +9,17 @@ from schemas import *
 from crud import *
 
 
-router = APIRouter(prefix="/admin", tags=["Admin Roles"], dependencies=[Depends(admin_only)])
-
-
-@router.post("/roles/", response_model=RoleResponse)
-def create_new_role(role: RoleCreate, db: Session = Depends(get_db)):
-    return create_role(db, role)
+router = APIRouter(prefix="/admin", tags=["Admin Roles"], dependencies=[Depends(admin_only)]) #
 
 
 @router.get("/roles/", response_model=List[RoleResponse])
 def list_roles(db: Session = Depends(get_db)):
     return get_roles(db)
+
+
+@router.post("/roles/", response_model=RoleResponse)
+def create_new_role(role: RoleCreate, db: Session = Depends(get_db)):
+    return create_role(db, role)
 
 
 @router.delete("/roles/{role_id}", status_code=204)

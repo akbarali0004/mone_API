@@ -8,18 +8,19 @@ from models import *
 from schemas import *
 from crud import *
 
-router = APIRouter(prefix="/admin", tags=["Admin Tasks"], dependencies=[Depends(admin_only)])
-
-
-@router.post("/tasks/", response_model=TaskResponse)
-def create_new_task(task: TaskCreate, db: Session = Depends(get_db)):
-    print(task)
-    return create_task(db, task)
+router = APIRouter(prefix="/admin", tags=["Admin Tasks"], dependencies=[Depends(admin_only)]) #, dependencies=[Depends(admin_only)]
 
 
 @router.get("/tasks/", response_model=list[TaskResponse])
 def list_tasks(db: Session = Depends(get_db)):
     return get_tasks_for_admin(db)
+
+
+@router.post("/tasks/") #, response_model=TaskResponse
+def create_new_task(task: TaskCreate, db: Session = Depends(get_db)):
+    print(task)
+    create_task(db, task)
+    return {"message":"Success!"}
 
 
 @router.delete("/tasks/{task_id}", status_code=204)

@@ -9,13 +9,13 @@ sqlalchemy = ">=1.4"
 alembic = "*"
 pydantic = "*"
 python-multipart = "*"
-uvicorn = {extras = ["standard"], version = "*"}
 apscheduler = "*"
 bcrypt = "==4.0.1"
-passlib = {extras = ["bcrypt"], version = "==1.7.4"}
 pydantic-settings = "*"
+uvicorn = {extras = ["standard"], version = "*"}
+passlib = {extras = ["bcrypt"], version = "==1.7.4"}
 
 [dev-packages]
 
 [requires]
-python_version = "3.13"
+python_version = "3.14"

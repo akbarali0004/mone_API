@@ -1,12 +1,15 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
-from datetime import datetime
+from datetime import datetime, date, timedelta
 import shutil
 import os
 
+from settings import settings
 from models import *
 from schemas import *
+
+UPLOAD_DIR = settings.UPLOAD_DIR
 
 
 # user
@@ -60,17 +63,18 @@ def delete_user(db: Session, user_id: int):
 
 # Task
 def create_task(db: Session, task: TaskCreate):
-    db_task = Task(
-        description=task.description,
-        task_type=task.task_type.value,
-        role=task.role,
-        filial_id=task.filial_id,
-        task_status="active"
-    )
-    db.add(db_task)
-    db.commit()
-    db.refresh(db_task)
-    return db_task
+    # created_tasks = []
+    for filial_id in task.filials_id:
+        db_task = Task(
+            description=task.description,
+            task_type=task.task_type.value,
+            role=task.role,
+            filial_id=filial_id,
+            task_status="active"
+        )
+        db.add(db_task)
+        db.commit()
+        db.refresh(db_task)
 
 
 def get_tasks_for_admin(db: Session):
@@ -81,6 +85,7 @@ def get_tasks_for_user(db: Session, filial_id, role):
     tasks = db.query(Task).filter(
         and_(
             Task.task_status == "active",
+            Task.task_type == "active",
             Task.filial_id == filial_id,
             Task.role == role
         )
@@ -120,16 +125,15 @@ def create_task_proof(db: Session, proof: TaskProofCreate, file):
     if task.task_status=="completed":
         raise HTTPException(status_code=409, detail="Task completed")
 
-    UPLOAD_DIR = "uploads"
-    if not os.path.exists(UPLOAD_DIR):
-        os.makedirs(UPLOAD_DIR)
 
     file_path = None
+    if not os.path.exists(f"{settings.UPLOAD_DIR}/{date.today()}"):
+        os.makedirs(f"{settings.UPLOAD_DIR}/{date.today()}")
 
     if file:
         extension = file.filename.split(".")[-1]
         new_filename = f"{datetime.now().timestamp()}.{extension}"
-        file_path = f"{UPLOAD_DIR}/{new_filename}"
+        file_path = f"{UPLOAD_DIR}/{date.today()}/{new_filename}"
 
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
@@ -144,19 +148,43 @@ def create_task_proof(db: Session, proof: TaskProofCreate, file):
     return task_proof
 
 
+def get_task_proof(db: Session):
+    one_week_ago = date.today() - timedelta(days=7)
+    return db.query(TaskProof).filter(TaskProof.created_date >= one_week_ago).all()
+
+
+def checker_task_proof_action(current_user, task_id, db, action):
+    if current_user.role_rel.name.lower() != "checker":
+        raise HTTPException(403, "Role is not checker")
+    
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        raise HTTPException(404, "Task not found")
+    if action == "approve":
+        task.task_status = TaskStatus.completed
+    elif action == "reject":
+        task.task_status = TaskStatus.active
+    else:
+        raise HTTPException(400, "Invalid action")
+
+    db.commit()
+
+    return {"detail": "Task reviewed successfully"}
+
+
 # activate
 def activate_tasks(db: Session):
     today = datetime.now().date()
-    weekday = datetime.today().weekday()  # 0 = Monday
+    weekday = datetime.today().weekday()
 
     tasks = db.query(Task).all()
 
     for task in tasks:
         if task.task_type.value == "daily":
             task.task_status = "active"
-        elif task.task_type.value == "weekly" and weekday == 0:  # dushanba
+        elif task.task_type.value == "weekly" and weekday == 0:
             task.task_status = "active"
-        elif task.task_type.value == "monthly" and today.day == 1:  # oy boshida
+        elif task.task_type.value == "monthly" and today.day == 1:
             task.task_status = "active"
 
     db.commit()
