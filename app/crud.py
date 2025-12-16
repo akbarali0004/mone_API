@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy import and_
+from sqlalchemy import and_, or_
 from datetime import datetime, date, timedelta
 import shutil
 import os
@@ -82,15 +82,33 @@ def get_tasks_for_admin(db: Session):
  
 
 def get_tasks_for_user(db: Session, filial_id, role):
+    today = date.today()
+
+    is_monday = today.weekday() == 0
+    is_first_day = today.day == 1
+
+    filters = [
+        Task.task_status == "active",
+        Task.filial_id == filial_id,
+        Task.role == role
+    ]
+
+    task_type_filter = [Task.task_type == "daily"]
+
+    if is_monday:
+        task_type_filter.append(Task.task_type == "weekly")
+
+    if is_first_day:
+        task_type_filter.append(Task.task_type == "monthly")
+
     tasks = db.query(Task).filter(
         and_(
-            Task.task_status == "active",
-            Task.task_type == "active",
-            Task.filial_id == filial_id,
-            Task.role == role
+            *filters,
+            or_(*task_type_filter)
         )
     ).all()
     return tasks
+
 
 def delete_task(db: Session, task_id: int):
     db.query(Task).filter(Task.id == task_id).delete()
