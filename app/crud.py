@@ -166,9 +166,37 @@ def create_task_proof(db: Session, proof: TaskProofCreate, file):
     return task_proof
 
 
+from datetime import date, timedelta
+from sqlalchemy.orm import Session
+from models import Task, TaskProof
+
+
 def get_task_proof(db: Session):
     one_week_ago = date.today() - timedelta(days=7)
-    return db.query(TaskProof).filter(TaskProof.created_date >= one_week_ago).all()
+
+    data = (
+        db.query(TaskProof, Task)
+        .join(Task, Task.id == TaskProof.task_id)
+        .filter(TaskProof.created_date >= one_week_ago)
+        .all()
+    )
+
+    result = []
+    for proof, task in data:
+        result.append({
+            "id": proof.id,
+            "task_id": task.id,
+            "description": task.description,
+            "task_type": task.task_type,
+            "role": task.role,
+            "filial_id": task.filial_id,
+            "task_status": task.task_status,
+            "file_path": proof.file_path,
+            "created_date": proof.created_date
+        })
+
+    return result
+
 
 
 def checker_task_proof_action(current_user, task_id, db, action):

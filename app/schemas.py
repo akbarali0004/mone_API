@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
 from utils.enums import TaskStatus, TaskType
+from datetime import date
 
 
 # Roles
@@ -84,8 +85,13 @@ class TaskProofCreate(BaseModel):
 class TaskProofResponse(BaseModel):
     id: int
     task_id: int
-    text: Optional[str] = None
-    file_path: str
+    description: str
+    task_type: TaskType
+    role: int
+    filial_id: int
+    task_status: TaskStatus
+    file_path: str | None
+    created_date: date
 
     model_config = {
         "from_attributes": True

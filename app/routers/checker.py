@@ -1,14 +1,16 @@
+from typing import List
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from database import get_db
 from deps import admin_checker_only
 from models import User
 from crud import get_task_proof, checker_task_proof_action
+from schemas import TaskProofResponse
 
 router = APIRouter(prefix="/checker", tags=["Checker"], dependencies=[Depends(admin_checker_only)])
 
 
-@router.get("/task-proofs/")
+@router.get("/task-proofs/", response_model=List[TaskProofResponse])
 async def websocket_checker(db: Session = Depends(get_db)):
     return get_task_proof(db)
     
