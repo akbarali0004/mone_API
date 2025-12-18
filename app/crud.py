@@ -193,6 +193,7 @@ def get_tasks_with_proofs(db: Session):
             "role": task.role,
             "filial_id": task.filial_id,
             "task_status": task.task_status.value if hasattr(task.task_status, "value") else task.task_status,
+            "file_path": proof.text if proof else None,
             "file_path": proof.file_path if proof else None,
             "created_date": proof.created_date if proof else None
         })

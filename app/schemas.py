@@ -90,6 +90,7 @@ class TaskProofResponse(BaseModel):
     role: int
     filial_id: int
     task_status: TaskStatus
+    text: Optional[str] = None
     file_path: Optional[str] = None
     created_date: Optional[date] = None
 
