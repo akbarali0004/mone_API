@@ -223,10 +223,11 @@ def checker_task_proof_action(current_user, task_id, db, action):
 
 # activate
 def activate_tasks(db: Session):
-    today = datetime.now().date()
-    weekday = datetime.today().weekday()
+    now = datetime.now()
+    today = now.date()
+    weekday = now.weekday()
 
-    tasks = db.query(Task).all()
+    tasks = db.query(Task).filter(Task.task_status != TaskStatus.active).all()
 
     for task in tasks:
         if task.task_type.value == "daily":
@@ -236,4 +237,14 @@ def activate_tasks(db: Session):
         elif task.task_type.value == "monthly" and today.day == 1:
             task.task_status = "active"
 
+    db.commit()
+
+
+# Delete 7 day ago proofs
+def delete_task_proofs(db: Session):
+    seven_days_ago = date.today() - timedelta(days=7)
+
+    old_proofs = db.query(TaskProof).filter(TaskProof.created_date < seven_days_ago)
+
+    old_proofs.delete(synchronize_session=False)
     db.commit()
