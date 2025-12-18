@@ -83,15 +83,15 @@ class TaskProofCreate(BaseModel):
 
 
 class TaskProofResponse(BaseModel):
-    id: int
+    id: Optional[int] = None
     task_id: int
     description: str
     task_type: TaskType
     role: int
     filial_id: int
     task_status: TaskStatus
-    file_path: str | None
-    created_date: date
+    file_path: Optional[str] = None
+    created_date: Optional[date] = None
 
     model_config = {
         "from_attributes": True

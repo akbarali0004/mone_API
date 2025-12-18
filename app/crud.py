@@ -9,6 +9,7 @@ from settings import settings
 from models import *
 from schemas import *
 
+
 UPLOAD_DIR = settings.UPLOAD_DIR
 
 
@@ -166,33 +167,34 @@ def create_task_proof(db: Session, proof: TaskProofCreate, file):
     return task_proof
 
 
-from datetime import date, timedelta
-from sqlalchemy.orm import Session
-from models import Task, TaskProof
-
-
-def get_task_proof(db: Session):
+def get_tasks_with_proofs(db: Session):
     one_week_ago = date.today() - timedelta(days=7)
 
     data = (
-        db.query(TaskProof, Task)
-        .join(Task, Task.id == TaskProof.task_id)
-        .filter(TaskProof.created_date >= one_week_ago)
+        db.query(Task, TaskProof)
+        .outerjoin(
+            TaskProof,
+            and_(
+                TaskProof.task_id == Task.id,
+                TaskProof.created_date >= one_week_ago
+            )
+        )
         .all()
     )
 
     result = []
-    for proof, task in data:
+
+    for task, proof in data:
         result.append({
-            "id": proof.id,
+            "id": proof.id if proof else None,
             "task_id": task.id,
             "description": task.description,
-            "task_type": task.task_type,
+            "task_type": task.task_type.value if hasattr(task.task_type, "value") else task.task_type,
             "role": task.role,
             "filial_id": task.filial_id,
-            "task_status": task.task_status,
-            "file_path": proof.file_path,
-            "created_date": proof.created_date
+            "task_status": task.task_status.value if hasattr(task.task_status, "value") else task.task_status,
+            "file_path": proof.file_path if proof else None,
+            "created_date": proof.created_date if proof else None
         })
 
     return result
