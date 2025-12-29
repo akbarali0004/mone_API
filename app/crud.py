@@ -230,14 +230,17 @@ def activate_tasks(db: Session):
     tasks = db.query(Task).filter(Task.task_status != TaskStatus.active).all()
 
     for task in tasks:
-        if task.task_type.value == "daily":
-            task.task_status = "active"
-        elif task.task_type.value == "weekly" and weekday == 0:
-            task.task_status = "active"
-        elif task.task_type.value == "monthly" and today.day == 1:
-            task.task_status = "active"
+        if task.task_type == TaskType.daily:
+            task.task_status = TaskStatus.active
+
+        elif task.task_type == TaskType.weekly and weekday == 0:
+            task.task_status = TaskStatus.active
+
+        elif task.task_type == TaskType.monthly and today.day == 1:
+            task.task_status = TaskStatus.active
 
     db.commit()
+    print("Activated")
 
 
 # Delete 7 day ago proofs
@@ -248,3 +251,4 @@ def delete_task_proofs(db: Session):
 
     old_proofs.delete(synchronize_session=False)
     db.commit()
+    print("Deleted")

@@ -14,6 +14,7 @@ bcrypt = "==4.0.1"
 pydantic-settings = "*"
 uvicorn = {extras = ["standard"], version = "*"}
 passlib = {extras = ["bcrypt"], version = "==1.7.4"}
+pytz = "*"
 
 [dev-packages]
 
